@@ -8,7 +8,26 @@ import styles from "./App.module.css";
 
 const queryClient = new QueryClient();
 
+function validateApiResponse(data) {
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error("Invalid API response: expected non-empty array");
+  }
+  
+  for (const item of data) {
+    if (
+      typeof item.week !== "number" ||
+      typeof item.total !== "number" ||
+      !Array.isArray(item.days) ||
+      item.days.length !== 7
+    ) {
+      throw new Error("Invalid API response: missing or malformed required properties");
+    }
+  }
+}
+
 function renderGraph(root, data) {
+  validateApiResponse(data);
+  
   const layout = {
     title: `Commits to the mdn/content repo (${new Date(data[0].week * 1000).toLocaleDateString()} - ${new Date(data[data.length - 1].week * 1000).toLocaleDateString()})`,
     xaxis: {
@@ -31,6 +50,8 @@ function renderGraph(root, data) {
 }
 
 function renderGrid(root, data) {
+  validateApiResponse(data);
+  
   const layout = {
     title: `Commits to the mdn/content repo, by day`,
     height: 350,
